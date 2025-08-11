@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MyApp());
@@ -77,73 +79,58 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
   String selectedCategory = 'ทั้งหมด';
   List<CartItem> cartItems = [];
   List<int> favorites = [];
+  List<Restaurant> restaurants = [];
+  bool isLoading = true;
 
   final List<String> categories = [
     'ทั้งหมด', 'อาหารไทย', 'อาหารญี่ปุ่น', 'อาหารอิตาลี', 'เบเกอรี่', 'เครื่องดื่ม'
   ];
 
-  final List<Restaurant> restaurants = [
-    Restaurant(
-      id: 1,
-      name: 'ครัวคุณยาย',
-      cuisine: 'อาหารไทย',
-      rating: 4.8,
-      deliveryTime: '25-35',
-      deliveryFee: 15,
-      image: '🍛',
-      popular: true,
-      dishes: [
-        Dish(name: 'ผัดไทย', price: 45, image: '🍜'),
-        Dish(name: 'แกงเผ็ด', price: 55, image: '🍲'),
-        Dish(name: 'ข้าวผัด', price: 40, image: '🍚'),
-      ],
-    ),
-    Restaurant(
-      id: 2,
-      name: 'Tokyo Sushi',
-      cuisine: 'อาหารญี่ปุ่น',
-      rating: 4.9,
-      deliveryTime: '30-45',
-      deliveryFee: 20,
-      image: '🍣',
-      popular: false,
-      dishes: [
-        Dish(name: 'Salmon Set', price: 280, image: '🍣'),
-        Dish(name: 'Ramen', price: 180, image: '🍜'),
-        Dish(name: 'Tempura', price: 220, image: '🍤'),
-      ],
-    ),
-    Restaurant(
-      id: 3,
-      name: 'Pizza Corner',
-      cuisine: 'อาหารอิตาลี',
-      rating: 4.6,
-      deliveryTime: '20-30',
-      deliveryFee: 25,
-      image: '🍕',
-      popular: true,
-      dishes: [
-        Dish(name: 'Margherita Pizza', price: 189, image: '🍕'),
-        Dish(name: 'Pasta Carbonara', price: 159, image: '🍝'),
-        Dish(name: 'Caesar Salad', price: 129, image: '🥗'),
-      ],
-    ),
-    Restaurant(
-      id: 4,
-      name: 'Sweet Bakery',
-      cuisine: 'เบเกอรี่',
-      rating: 4.7,
-      deliveryTime: '15-25',
-      deliveryFee: 10,
-      image: '🧁',
-      popular: false,
-      dishes: [
-        Dish(name: 'Chocolate Cake', price: 89, image: '🍰'),
-        Dish(name: 'Croissant', price: 35, image: '🥐'),
-        Dish(name: 'Coffee', price: 45, image: '☕'),
-      ],
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    fetchRestaurants();
+  }
+
+  Future<void> fetchRestaurants() async {
+    final url = Uri.parse('https://dummyjson.com/recipes');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        final List recipes = data['recipes'];
+
+        setState(() {
+          restaurants = recipes.map((recipe) {
+            return Restaurant(
+              id: recipe['id'],
+              name: recipe['name'],
+              cuisine: recipe['cuisine'] ?? 'ไม่ระบุ',
+              rating: (recipe['rating'] as num).toDouble(),
+              deliveryTime:
+                  '${(recipe['prepTimeMinutes'] ?? 15)}-${(recipe['cookTimeMinutes'] ?? 30)}',
+              deliveryFee: 20,
+              image: recipe['image'] ?? '',
+              popular: (recipe['rating'] as num) > 4.5,
+              dishes: [
+                Dish(
+                  name: recipe['name'],
+                  price: recipe['caloriesPerServing'] ?? 100,
+                  image: recipe['image'] ?? '',
+                )
+              ],
+            );
+          }).toList();
+          isLoading = false;
+        });
+      } else {
+        throw Exception('โหลดข้อมูลไม่สำเร็จ');
+      }
+    } catch (e) {
+      print(e);
+      setState(() => isLoading = false);
+    }
+  }
 
   void toggleFavorite(int restaurantId) {
     setState(() {
@@ -158,9 +145,10 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
   void addToCart(Restaurant restaurant, Dish dish) {
     setState(() {
       int existingIndex = cartItems.indexWhere(
-        (item) => item.dish.name == dish.name && item.restaurant.id == restaurant.id
-      );
-      
+          (item) =>
+              item.dish.name == dish.name &&
+              item.restaurant.id == restaurant.id);
+
       if (existingIndex >= 0) {
         cartItems[existingIndex].quantity++;
       } else {
@@ -177,421 +165,218 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
   }
 
   int get cartTotal {
-    return cartItems.fold(0, (total, item) => total + (item.dish.price * item.quantity));
+    return cartItems.fold(
+        0, (total, item) => total + (item.dish.price * item.quantity));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          // Header
-          Container(
-            color: Colors.white,
-            child: SafeArea(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    // Top Header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(Icons.location_on, color: Colors.red, size: 16),
-                                SizedBox(width: 4),
-                                Text('ส่งถึง', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-                              ],
-                            ),
-                            Text(
-                              'นครราชสีมา',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[800],
-                              ),
-                            ),
-                          ],
-                        ),
-                        Stack(
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Colors.orange,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Icon(Icons.shopping_cart, color: Colors.white),
-                            ),
-                            if (cartItems.isNotEmpty)
-                              Positioned(
-                                right: -2,
-                                top: -2,
-                                child: Container(
-                                  padding: EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  constraints: BoxConstraints(minWidth: 20, minHeight: 20),
-                                  child: Text(
-                                    '${cartItems.length}',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16),
-                    // Search Bar
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: 'ค้นหาร้านอาหาร เมนู...',
-                          prefixIcon: Icon(Icons.search, color: Colors.grey),
-                          suffixIcon: Icon(Icons.tune, color: Colors.grey),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.all(16),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Column(
               children: [
-                // Promotional Banner
+                // Header
                 Container(
-                  margin: EdgeInsets.only(bottom: 24),
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.orange[400]!, Colors.red[500]!],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'ส่งฟรี! 🎉',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'สั่งขั้นต่ำ 100 บาท',
-                              style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 14),
-                            ),
-                            SizedBox(height: 8),
-                            Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                'ใช้โค้ด: FREESHIP',
-                                style: TextStyle(color: Colors.white, fontSize: 12),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text('🍔', style: TextStyle(fontSize: 40,)),
-                    ],
-                  ),
-                ),
-
-                // Categories
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'หมวดหมู่',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey[800],
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: categories.map((category) {
-                          bool isSelected = selectedCategory == category;
-                          return Container(
-                            margin: EdgeInsets.only(right: 12),
-                            child: GestureDetector(
-                              onTap: () => setState(() => selectedCategory = category),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: isSelected ? Colors.orange : Colors.white,
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
-                                      blurRadius: 4,
-                                      offset: Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  category,
-                                  style: TextStyle(
-                                    color: isSelected ? Colors.white : Colors.grey[600],
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                    fontSize: 14,
+                  color: Colors.white,
+                  child: SafeArea(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          // Top Header
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.location_on,
+                                          color: Colors.red, size: 16),
+                                      SizedBox(width: 4),
+                                      Text('ส่งถึง',
+                                          style: TextStyle(
+                                              color: Colors.grey[600],
+                                              fontSize: 14)),
+                                    ],
                                   ),
-                                ),
+                                  Text(
+                                    'Food Delivery',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.grey[800],
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  ],
-                ),
-
-                SizedBox(height: 24),
-
-                // Popular Restaurants
-                if (filteredRestaurants.where((r) => r.popular).isNotEmpty) ...[
-                  Text(
-                    'ร้านยอดนิยม ⭐',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                  SizedBox(height: 12),
-                  ...filteredRestaurants.where((r) => r.popular).map((restaurant) => 
-                    _buildPopularRestaurantCard(restaurant)
-                  ),
-                  SizedBox(height: 24),
-                ],
-
-                // All Restaurants
-                Text(
-                  'ร้านอาหารทั้งหมด',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                  ),
-                ),
-                SizedBox(height: 12),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.85,
-                  ),
-                  itemCount: filteredRestaurants.length,
-                  itemBuilder: (context, index) => _buildRestaurantCard(filteredRestaurants[index]),
-                ),
-                
-                SizedBox(height: 100), // Space for bottom widget
-              ],
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: cartItems.isNotEmpty ? _buildCartSummary() : _buildBottomNavigation(),
-    );
-  }
-
-  Widget _buildPopularRestaurantCard(Restaurant restaurant) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 16),
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.orange[100]!, Colors.red[100]!],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Center(
-                  child: Text(restaurant.image, style: TextStyle(fontSize: 28)),
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          restaurant.name,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.grey[800],
+                              Stack(
+                                children: [
+                                  Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Icon(Icons.shopping_cart,
+                                        color: Colors.white),
+                                  ),
+                                  if (cartItems.isNotEmpty)
+                                    Positioned(
+                                      right: -2,
+                                      top: -2,
+                                      child: Container(
+                                        padding: EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          color: Colors.red,
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                        ),
+                                        constraints: BoxConstraints(
+                                            minWidth: 20, minHeight: 20),
+                                        child: Text(
+                                          '${cartItems.length}',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ),
-                        if (restaurant.popular) ...[
-                          SizedBox(width: 8),
+                          SizedBox(height: 16),
+                          // Search Bar
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.orange,
-                              borderRadius: BorderRadius.circular(10),
+                              color: Colors.grey[100],
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Text(
-                              'ยอดนิยม',
-                              style: TextStyle(color: Colors.white, fontSize: 10),
+                            child: TextField(
+                              decoration: InputDecoration(
+                                hintText: 'ค้นหาร้านอาหาร เมนู...',
+                                prefixIcon:
+                                    Icon(Icons.search, color: Colors.grey),
+                                suffixIcon:
+                                    Icon(Icons.tune, color: Colors.grey),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                              ),
                             ),
                           ),
                         ],
-                      ],
+                      ),
                     ),
-                    Text(
-                      restaurant.cuisine,
-                      style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                    ),
-                    SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(Icons.star, color: Colors.yellow[700], size: 16),
-                        SizedBox(width: 4),
-                        Text('${restaurant.rating}', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14)),
-                        SizedBox(width: 16),
-                        Icon(Icons.access_time, color: Colors.grey[400], size: 16),
-                        SizedBox(width: 4),
-                        Text('${restaurant.deliveryTime} นาที', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-                        SizedBox(width: 16),
-                        Text('ค่าส่ง ${restaurant.deliveryFee} บาท', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-              GestureDetector(
-                onTap: () => toggleFavorite(restaurant.id),
-                child: Icon(
-                  favorites.contains(restaurant.id) ? Icons.favorite : Icons.favorite_border,
-                  color: favorites.contains(restaurant.id) ? Colors.red : Colors.grey[400],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'เมนูแนะนำ',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
-                  fontSize: 14,
-                ),
-              ),
-              SizedBox(height: 8),
-              ...restaurant.dishes.take(2).map((dish) => Container(
-                margin: EdgeInsets.only(bottom: 8),
-                padding: EdgeInsets.only(top: 8),
-                decoration: BoxDecoration(
-                  border: Border(top: BorderSide(color: Colors.grey[200]!, width: 0.5)),
-                ),
-                child: Row(
-                  children: [
-                    Text(dish.image, style: TextStyle(fontSize: 18)),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
+
+                Expanded(
+                  child: ListView(
+                    padding: EdgeInsets.all(16),
+                    children: [
+                      // Categories
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            dish.name,
-                            style: TextStyle(fontWeight: FontWeight.w500, color: Colors.grey[800]),
-                          ),
-                          Text(
-                            '${dish.price} บาท',
+                            'หมวดหมู่',
                             style: TextStyle(
-                              color: Colors.orange[600],
-                              fontWeight: FontWeight.w600,
-                              fontSize: 14,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[800],
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: categories.map((category) {
+                                bool isSelected =
+                                    selectedCategory == category;
+                                return Container(
+                                  margin: EdgeInsets.only(right: 12),
+                                  child: GestureDetector(
+                                    onTap: () => setState(
+                                        () => selectedCategory = category),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 16, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? Colors.orange
+                                            : Colors.white,
+                                        borderRadius: BorderRadius.circular(20),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color:
+                                                Colors.black.withOpacity(0.05),
+                                            blurRadius: 4,
+                                            offset: Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Text(
+                                        category,
+                                        style: TextStyle(
+                                          color: isSelected
+                                              ? Colors.white
+                                              : Colors.grey[600],
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                    GestureDetector(
-                      onTap: () => addToCart(restaurant, dish),
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: Colors.orange,
-                          borderRadius: BorderRadius.circular(16),
+                      SizedBox(height: 24),
+
+                      // All Restaurants
+                      Text(
+                        'ร้านอาหารทั้งหมด',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[800],
                         ),
-                        child: Icon(Icons.add, color: Colors.white, size: 16),
                       ),
-                    ),
-                  ],
+                      SizedBox(height: 12),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: 0.85,
+                        ),
+                        itemCount: filteredRestaurants.length,
+                        itemBuilder: (context, index) =>
+                            _buildRestaurantCard(filteredRestaurants[index]),
+                      ),
+                      SizedBox(height: 100),
+                    ],
+                  ),
                 ),
-              )),
-            ],
-          ),
-        ],
-      ),
+              ],
+            ),
+      bottomNavigationBar: cartItems.isNotEmpty
+          ? _buildCartSummary()
+          : _buildBottomNavigation(),
     );
   }
 
@@ -615,15 +400,16 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
             width: double.infinity,
             height: 80,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.orange[100]!, Colors.red[100]!],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Center(
-              child: Text(restaurant.image, style: TextStyle(fontSize: 32)),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: restaurant.image.isNotEmpty
+                  ? Image.network(
+                      restaurant.image,
+                      fit: BoxFit.cover,
+                    )
+                  : Center(child: Text("🍽️")),
             ),
           ),
           SizedBox(height: 12),
@@ -634,10 +420,14 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
               fontSize: 14,
               color: Colors.grey[800],
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           Text(
             restaurant.cuisine,
             style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           SizedBox(height: 8),
           Row(
@@ -649,7 +439,8 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
                   SizedBox(width: 2),
                   Text(
                     '${restaurant.rating}',
-                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+                    style:
+                        TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
                   ),
                 ],
               ),
@@ -704,7 +495,8 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange,
                 padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
               child: Text(
                 'ดูตะกร้า',
