@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'category_detail.dart'; // ไฟล์หน้ารายละเอียด อยู่ใน lib/category_detail.dart
+import 'category_detail.dart';
 
 class RestaurantHomePage extends StatelessWidget {
   RestaurantHomePage({Key? key}) : super(key: key);
@@ -32,7 +32,6 @@ class RestaurantHomePage extends StatelessWidget {
               title: Text(country),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
-                // ส่งชื่อประเทศและรายการเมนูไปหน้าแสดงรายละเอียด
                 Navigator.push(
                   context,
                   MaterialPageRoute(
