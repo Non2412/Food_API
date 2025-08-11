@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'profile_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -217,39 +218,63 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
                             ),
                           ],
                         ),
-                        Stack(
+                        Row(
                           children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Colors.orange,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Icon(Icons.shopping_cart, color: Colors.white),
-                            ),
-                            if (cartItems.isNotEmpty)
-                              Positioned(
-                                right: -2,
-                                top: -2,
-                                child: Container(
-                                  padding: EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  constraints: BoxConstraints(minWidth: 20, minHeight: 20),
-                                  child: Text(
-                                    '${cartItems.length}',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
+                            // ปุ่มโปรไฟล์
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const ProfilePage()),
+                                );
+                              },
+                              child: Container(
+                                width: 40,
+                                height: 40,
+                                margin: EdgeInsets.only(right: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[300],
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
+                                child: Icon(Icons.person, color: Colors.orange),
                               ),
+                            ),
+                            // ปุ่มตะกร้า
+                            Stack(
+                              children: [
+                                Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Icon(Icons.shopping_cart, color: Colors.white),
+                                ),
+                                if (cartItems.isNotEmpty)
+                                  Positioned(
+                                    right: -2,
+                                    top: -2,
+                                    child: Container(
+                                      padding: EdgeInsets.all(2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      constraints: BoxConstraints(minWidth: 20, minHeight: 20),
+                                      child: Text(
+                                        '${cartItems.length}',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ],
                         ),
                       ],
@@ -732,10 +757,15 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildBottomNavItem('🏠', 'หน้าแรก'),
-              _buildBottomNavItem('🔍', 'ค้นหา'),
-              _buildBottomNavItem('❤️', 'รายการโปรด'),
-              _buildBottomNavItem('👤', 'โปรไฟล์'),
+              _buildBottomNavItem('🏠', 'หน้าแรก', onTap: () {}),
+              _buildBottomNavItem('🔍', 'ค้นหา', onTap: () {}),
+              _buildBottomNavItem('❤️', 'รายการโปรด', onTap: () {}),
+              _buildBottomNavItem('👤', 'โปรไฟล์', onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ProfilePage()),
+                );
+              }),
             ],
           ),
         ),
@@ -743,20 +773,23 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
     );
   }
 
-  Widget _buildBottomNavItem(String icon, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(icon, style: TextStyle(fontSize: 20)),
-        SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.grey[500],
-            fontSize: 12,
+  Widget _buildBottomNavItem(String icon, String label, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(icon, style: TextStyle(fontSize: 20)),
+          SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey[500],
+              fontSize: 12,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
