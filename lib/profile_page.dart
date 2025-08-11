@@ -46,6 +46,28 @@ class ProfilePage extends StatelessWidget {
               },
               child: const Text('แก้ไขโปรไฟล์'),
             ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // TODO: เพิ่มฟังก์ชันเปลี่ยนรหัสผ่าน
+              },
+              child: const Text('เปลี่ยนรหัสผ่าน'),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                // TODO: เพิ่มฟังก์ชันจัดการบัญชี
+              },
+              child: const Text('จัดการบัญชี'),
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              onPressed: () {
+                // TODO: เพิ่มฟังก์ชันออกจากระบบ
+              },
+              style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text('ออกจากระบบ'),
+            ),
           ],
         ),
       ),

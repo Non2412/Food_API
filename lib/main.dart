@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'profile_page.dart';
+import 'login_page.dart';
+import 'register_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -15,7 +17,13 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.grey[50],
         fontFamily: 'Roboto',
       ),
-      home: RestaurantHomePage(),
+      initialRoute: '/login',
+      routes: {
+        '/login': (context) => const LoginPage(),
+        '/register': (context) => const RegisterPage(),
+        '/profile': (context) => const ProfilePage(),
+        '/home': (context) => RestaurantHomePage(),
+      },
       debugShowCheckedModeBanner: false,
     );
   }
