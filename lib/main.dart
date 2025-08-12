@@ -5,7 +5,6 @@ import 'package:http/http.dart' as http;
 import 'restaurant_home.dart';
 import 'category_detail.dart';
 import 'favorite_page.dart'; // <-- นำเข้า FavoritePage
-
 import 'search.dart';
 import 'profile_page.dart';
 import 'login_page.dart';
@@ -704,7 +703,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
             icon,
             style: TextStyle(
               fontSize: 20,
-              color: isSelected ? Colors.black : Colors.grey[500],
+
               color: isSelected ? Colors.black : Colors.grey[500],
             ),
           ),
@@ -712,7 +711,6 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.black : Colors.grey[500],
               color: isSelected ? Colors.black : Colors.grey[500],
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
