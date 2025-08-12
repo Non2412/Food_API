@@ -340,8 +340,8 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                                           horizontal: 16, vertical: 8),
                                       decoration: BoxDecoration(
                                         color: isSelected
-                                            ? Colors.orange
-                                            : Colors.white,
+                                            ? Colors.black
+                                            : Colors.white, // เปลี่ยนจาก Colors.orange เป็น Colors.black
                                         borderRadius: BorderRadius.circular(20),
                                         boxShadow: [
                                           BoxShadow(
@@ -479,7 +479,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.star, color: Colors.yellow[700], size: 12),
+                    Icon(Icons.star, color: Colors.black, size: 12), // เปลี่ยนจาก Colors.yellow[700] เป็น Colors.black
                     SizedBox(width: 2),
                     Text(
                       '${restaurant.rating}',
@@ -609,12 +609,18 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(icon, style: TextStyle(fontSize: 20, color: isSelected ? Colors.orange : Colors.grey[500])),
+          Text(
+            icon,
+            style: TextStyle(
+              fontSize: 20,
+              color: isSelected ? Colors.black : Colors.grey[500], // เปลี่ยนจาก Colors.orange เป็น Colors.black
+            ),
+          ),
           SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.orange : Colors.grey[500],
+              color: isSelected ? Colors.black : Colors.grey[500], // เปลี่ยนจาก Colors.orange เป็น Colors.black
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
