@@ -4,18 +4,19 @@ import 'package:food_api/model.dart';
 import 'package:http/http.dart' as http;
 import 'restaurant_home.dart';
 import 'category_detail.dart';
-import 'favorite_page.dart';
-import 'search.dart'; 
-import 'restaurant_country_page.dart';
+import 'favorite_page.dart'; // <-- นำเข้า FavoritePage
+
+
+import 'search.dart';
 import 'profile_page.dart';
+import 'login_page.dart';
+import 'register_page.dart'; // <-- นำเข้า RegisterPage
 
 void main() {
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -25,7 +26,11 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.grey[50],
         fontFamily: 'Roboto',
       ),
-      home: RestaurantHomePageData(),
+      home: LoginPage(),
+      routes: {
+        '/register': (context) => RegisterPage(),
+        '/home': (context) => RestaurantHomePageData(),
+      },
       debugShowCheckedModeBanner: false,
     );
   }
@@ -42,7 +47,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
   List<int> favorites = [];
   List<Restaurant> restaurants = [];
   bool isLoading = true;
-  int selectedTabIndex = 0;
+  int selectedTabIndex = 0; // เพิ่มตัวแปรนี้
 
   final List<String> categories = [
     'ทั้งหมด', 'ไทย', 'ญี่ปุ่น', 'อิตาลี', 'อเมริกัน', 'เอเชีย'
@@ -163,7 +168,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
               children: [
                 // Header
                 Container(
-                  color: const Color.fromARGB(255, 228, 99, 40),
+                  color: const Color.fromARGB(255, 224, 66, 18),
                   child: SafeArea(
                     child: Padding(
                       padding: EdgeInsets.all(16.0),
@@ -179,7 +184,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                                   Row(
                                     children: [
                                       Icon(Icons.location_on,
-                                          color: const Color.fromARGB(255, 248, 17, 0), size: 16),
+                                          color: Colors.red, size: 16),
                                       SizedBox(width: 4),
                                       Text('ส่งถึง',
                                           style: TextStyle(
@@ -286,7 +291,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                             ],
                           ),
                           SizedBox(height: 16),
-                          // Search Bar
+                          // Search Bar - เปลี่ยนจาก TextField เป็น GestureDetector
                           GestureDetector(
                             onTap: () {
                               Navigator.push(
@@ -359,7 +364,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                                       decoration: BoxDecoration(
                                         color: isSelected
                                             ? Colors.black
-                                            : Colors.white,
+                                            : Colors.white, // เปลี่ยนจาก Colors.orange เป็น Colors.black
                                         borderRadius: BorderRadius.circular(20),
                                         boxShadow: [
                                           BoxShadow(
@@ -430,6 +435,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
   Widget _buildRestaurantCard(Restaurant restaurant) {
     return GestureDetector(
       onTap: () {
+        // กดดูรายละเอียดของร้าน
         List<String> dishNames = restaurant.dishes.map((dish) => dish.name).toList();
         Navigator.push(
           context,
@@ -496,7 +502,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.star, color: Colors.black, size: 12),
+                    Icon(Icons.star, color: Colors.black, size: 12), // เปลี่ยนจาก Colors.yellow[700] เป็น Colors.black
                     SizedBox(width: 2),
                     Text(
                       '${restaurant.rating}',
@@ -595,55 +601,8 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildBottomNavItem('🏠', 'หน้าแรก', 0),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SearchPage(restaurants: restaurants),
-                    ),
-                  );
-                },
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('🔍', style: TextStyle(fontSize: 20)),
-                    SizedBox(height: 4),
-                    Text(
-                      'ค้นหา',
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  List<Restaurant> favoriteRestaurants = restaurants.where((r) => favorites.contains(r.id)).toList();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => FavoritePage(favoriteRestaurants: favoriteRestaurants),
-                    ),
-                  );
-                },
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('❤️', style: TextStyle(fontSize: 20)),
-                    SizedBox(height: 4),
-                    Text(
-                      'รายการโปรด',
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _buildBottomNavItem('🔍', 'ค้นหา', 1),
+              _buildBottomNavItem('❤️', 'รายการโปรด', 2),
               _buildBottomNavItem('👤', 'โปรไฟล์', 3),
             ],
           ),
@@ -659,6 +618,29 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
         setState(() {
           selectedTabIndex = index;
         });
+        if (label == 'รายการโปรด') {
+          List<Restaurant> favoriteRestaurants = restaurants.where((r) => favorites.contains(r.id)).toList();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FavoritePage(favoriteRestaurants: favoriteRestaurants),
+            ),
+          );
+        } else if (label == 'โปรไฟล์') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProfilePage(),
+            ),
+          );
+        } else if (label == 'ค้นหา') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SearchPage(restaurants: restaurants),
+            ),
+          );
+        }
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -677,10 +659,10 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
               color: isSelected ? Colors.black : Colors.grey[500],
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ), 
+            ),
           ),
         ],
       ),
-    ); 
+    );
   }
 }
