@@ -1,21 +1,49 @@
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'register_page.dart';
+
+// ตัวแปร global สำหรับเก็บอีเมลผู้ใช้ที่ล็อกอินล่าสุด
+String? currentUserEmail;
+
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
 
   @override
-  State<ProfilePage> createState() => _ProfilePageState();
+  State<ProfilePage> createState() => ProfilePageState();
 }
 
-class _ProfilePageState extends State<ProfilePage> {
+class ProfilePageState extends State<ProfilePage> {
   String name = 'ชื่อผู้ใช้';
   String email = 'user@email.com';
   String phone = '081-234-5678';
   String address = '123 หมู่บ้านสุขใจ ต.ในเมือง อ.เมือง จ.นครราชสีมา';
   File? profileImage;
+
+  @override
+  void initState() {
+    super.initState();
+    // ถ้ามี currentUserEmail ให้ดึงข้อมูลจาก UserStore
+    if (currentUserEmail != null) {
+      final user = UserStore.users.firstWhere(
+        (u) => u['email'] == currentUserEmail,
+        orElse: () => {},
+      );
+      if (user.isNotEmpty) {
+        name = user['name'] ?? name;
+        email = user['email'] ?? email;
+        phone = user['phone'] ?? phone;
+        address = user['address'] ?? address;
+      }
+    }
+  }
+
+
+  // ...existing code...
+  // (ลบซ้ำ เหลือแค่ตัวแปรและ initState ที่ถูกต้อง 1 ชุด)
 
   Future<void> _pickProfileImage() async {
     if (kIsWeb) {

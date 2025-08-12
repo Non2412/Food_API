@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'register_page.dart';
+import 'profile_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -126,6 +127,8 @@ class _LoginPageState extends State<LoginPage> {
                           setState(() { errorText = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง'; });
                           return;
                         }
+                        // บันทึกอีเมลผู้ใช้ที่ล็อกอินล่าสุด
+                        currentUserEmail = user['email'];
                         Navigator.pushReplacementNamed(context, '/home');
                       },
                       icon: const Icon(Icons.login),
