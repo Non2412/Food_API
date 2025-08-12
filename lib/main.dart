@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:food_api/model.dart';
 import 'package:http/http.dart' as http;
+import 'restaurant_home.dart';
+import 'category_detail.dart';
 
 void main() {
   runApp(MyApp());
@@ -16,66 +19,18 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.grey[50],
         fontFamily: 'Roboto',
       ),
-      home: RestaurantHomePage(),
+      home: RestaurantHomePageData(),
       debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class Restaurant {
-  final int id;
-  final String name;
-  final String cuisine;
-  final double rating;
-  final String deliveryTime;
-  final int deliveryFee;
-  final String image;
-  final bool popular;
-  final List<Dish> dishes;
-
-  Restaurant({
-    required this.id,
-    required this.name,
-    required this.cuisine,
-    required this.rating,
-    required this.deliveryTime,
-    required this.deliveryFee,
-    required this.image,
-    required this.popular,
-    required this.dishes,
-  });
-}
-
-class Dish {
-  final String name;
-  final int price;
-  final String image;
-
-  Dish({
-    required this.name,
-    required this.price,
-    required this.image,
-  });
-}
-
-class CartItem {
-  final Restaurant restaurant;
-  final Dish dish;
-  int quantity;
-
-  CartItem({
-    required this.restaurant,
-    required this.dish,
-    this.quantity = 1,
-  });
-}
-
-class RestaurantHomePage extends StatefulWidget {
+class RestaurantHomePageData extends StatefulWidget {
   @override
-  _RestaurantHomePageState createState() => _RestaurantHomePageState();
+  _RestaurantHomePageDataState createState() => _RestaurantHomePageDataState();
 }
 
-class _RestaurantHomePageState extends State<RestaurantHomePage> {
+class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
   String selectedCategory = 'ทั้งหมด';
   List<CartItem> cartItems = [];
   List<int> favorites = [];
@@ -83,8 +38,26 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
   bool isLoading = true;
 
   final List<String> categories = [
-    'ทั้งหมด', 'อาหารไทย', 'อาหารญี่ปุ่น', 'อาหารอิตาลี', 'เบเกอรี่', 'เครื่องดื่ม'
+    'ทั้งหมด', 'ไทย', 'ญี่ปุ่น', 'อิตาลี', 'อเมริกัน', 'เอเชีย'
   ];
+
+  // แมปประเทศจาก cuisine
+  String mapCuisineToCountry(String cuisine) {
+    final Map<String, String> cuisineMap = {
+      'Thai': 'ไทย',
+      'Japanese': 'ญี่ปุ่น', 
+      'Italian': 'อิตาลี',
+      'American': 'อเมริกัน',
+      'Chinese': 'เอเชีย',
+      'Korean': 'เอเชีย',
+      'Vietnamese': 'เอเชีย',
+      'Indian': 'เอเชีย',
+      'Mediterranean': 'อิตาลี',
+      'Mexican': 'อเมริกัน',
+      'French': 'อิตาลี',
+    };
+    return cuisineMap[cuisine] ?? 'อื่นๆ';
+  }
 
   @override
   void initState() {
@@ -102,10 +75,14 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
 
         setState(() {
           restaurants = recipes.map((recipe) {
+            String cuisine = recipe['cuisine'] ?? 'Unknown';
+            String country = mapCuisineToCountry(cuisine);
+            
             return Restaurant(
               id: recipe['id'],
               name: recipe['name'],
-              cuisine: recipe['cuisine'] ?? 'ไม่ระบุ',
+              cuisine: cuisine,
+              country: country,
               rating: (recipe['rating'] as num).toDouble(),
               deliveryTime:
                   '${(recipe['prepTimeMinutes'] ?? 15)}-${(recipe['cookTimeMinutes'] ?? 30)}',
@@ -117,6 +94,7 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
                   name: recipe['name'],
                   price: recipe['caloriesPerServing'] ?? 100,
                   image: recipe['image'] ?? '',
+                  description: recipe['instructions']?.take(2)?.join(' ') ?? 'อาหารอร่อย',
                 )
               ],
             );
@@ -161,7 +139,7 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
     if (selectedCategory == 'ทั้งหมด') {
       return restaurants;
     }
-    return restaurants.where((r) => r.cuisine == selectedCategory).toList();
+    return restaurants.where((r) => r.country == selectedCategory).toList();
   }
 
   int get cartTotal {
@@ -212,42 +190,68 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
                                   ),
                                 ],
                               ),
-                              Stack(
+                              Row(
                                 children: [
-                                  Container(
-                                    width: 40,
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: Colors.orange,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Icon(Icons.shopping_cart,
-                                        color: Colors.white),
-                                  ),
-                                  if (cartItems.isNotEmpty)
-                                    Positioned(
-                                      right: -2,
-                                      top: -2,
-                                      child: Container(
-                                        padding: EdgeInsets.all(2),
-                                        decoration: BoxDecoration(
-                                          color: Colors.red,
-                                          borderRadius:
-                                              BorderRadius.circular(10),
+                                  // ปุ่มดูตามประเทศ
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => RestaurantCountryPage(restaurants: restaurants),
                                         ),
-                                        constraints: BoxConstraints(
-                                            minWidth: 20, minHeight: 20),
-                                        child: Text(
-                                          '${cartItems.length}',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
+                                      );
+                                    },
+                                    child: Container(
+                                      margin: EdgeInsets.only(right: 12),
+                                      width: 40,
+                                      height: 40,
+                                      decoration: BoxDecoration(
+                                        color: Colors.blue,
+                                        borderRadius: BorderRadius.circular(20),
                                       ),
+                                      child: Icon(Icons.public, color: Colors.white),
                                     ),
+                                  ),
+                                  // ตะกร้า
+                                  Stack(
+                                    children: [
+                                      Container(
+                                        width: 40,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: Colors.orange,
+                                          borderRadius: BorderRadius.circular(20),
+                                        ),
+                                        child: Icon(Icons.shopping_cart,
+                                            color: Colors.white),
+                                      ),
+                                      if (cartItems.isNotEmpty)
+                                        Positioned(
+                                          right: -2,
+                                          top: -2,
+                                          child: Container(
+                                            padding: EdgeInsets.all(2),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            constraints: BoxConstraints(
+                                                minWidth: 20, minHeight: 20),
+                                            child: Text(
+                                              '${cartItems.length}',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ],
@@ -287,7 +291,7 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'หมวดหมู่',
+                            'หมวดหมู่ประเทศ',
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -381,82 +385,98 @@ class _RestaurantHomePageState extends State<RestaurantHomePage> {
   }
 
   Widget _buildRestaurantCard(Restaurant restaurant) {
-    return Container(
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            height: 80,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: restaurant.image.isNotEmpty
-                  ? Image.network(
-                      restaurant.image,
-                      fit: BoxFit.cover,
-                    )
-                  : Center(child: Text("🍽️")),
+    return GestureDetector(
+      onTap: () {
+        // กดดูรายละเอียดของร้าน
+        List<String> dishNames = restaurant.dishes.map((dish) => dish.name).toList();
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CategoryDetailPage(
+              country: restaurant.country,
+              dishes: dishNames,
+              restaurant: restaurant,
             ),
           ),
-          SizedBox(height: 12),
-          Text(
-            restaurant.name,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-              color: Colors.grey[800],
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: Offset(0, 4),
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            restaurant.cuisine,
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(Icons.star, color: Colors.yellow[700], size: 12),
-                  SizedBox(width: 2),
-                  Text(
-                    '${restaurant.rating}',
-                    style:
-                        TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
-                  ),
-                ],
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              height: 80,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
               ),
-              Row(
-                children: [
-                  Icon(Icons.access_time, color: Colors.grey[400], size: 12),
-                  SizedBox(width: 2),
-                  Text(
-                    '${restaurant.deliveryTime.split('-')[0]} นาที',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                ],
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: restaurant.image.isNotEmpty
+                    ? Image.network(
+                        restaurant.image,
+                        fit: BoxFit.cover,
+                      )
+                    : Center(child: Text("🍽️")),
               ),
-            ],
-          ),
-        ],
+            ),
+            SizedBox(height: 12),
+            Text(
+              restaurant.name,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: Colors.grey[800],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              '${restaurant.country} • ${restaurant.cuisine}',
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.star, color: Colors.yellow[700], size: 12),
+                    SizedBox(width: 2),
+                    Text(
+                      '${restaurant.rating}',
+                      style:
+                          TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Icon(Icons.access_time, color: Colors.grey[400], size: 12),
+                    SizedBox(width: 2),
+                    Text(
+                      '${restaurant.deliveryTime.split('-')[0]} นาที',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
