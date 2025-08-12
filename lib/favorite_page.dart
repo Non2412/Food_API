@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'model.dart';
+import 'category_detail.dart';
 
 class FavoritePage extends StatelessWidget {
   final List<Restaurant> favoriteRestaurants;
@@ -10,21 +11,35 @@ class FavoritePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('รายการโปรด'),
+        title: const Text('รายการโปรด'),
         backgroundColor: Colors.orange,
+        leading: BackButton(color: Colors.white),
       ),
       body: favoriteRestaurants.isEmpty
-          ? Center(child: Text('ยังไม่มีร้านโปรด'))
+          ? const Center(child: Text('ยังไม่มีร้านโปรด'))
           : ListView.builder(
               itemCount: favoriteRestaurants.length,
-              itemBuilder: (context, index) {
-                final restaurant = favoriteRestaurants[index];
+              itemBuilder: (context, i) {
+                final r = favoriteRestaurants[i];
                 return ListTile(
-                  leading: restaurant.image.isNotEmpty
-                      ? Image.network(restaurant.image, width: 50, height: 50, fit: BoxFit.cover)
-                      : Icon(Icons.restaurant),
-                  title: Text(restaurant.name),
-                  subtitle: Text('${restaurant.country} • ${restaurant.cuisine}'),
+                  leading: r.image.isNotEmpty
+                      ? Image.network(r.image, width: 50, height: 50, fit: BoxFit.cover)
+                      : const Icon(Icons.restaurant),
+                  title: Text(r.name),
+                  subtitle: Text('${r.country} • ${r.cuisine}'),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.orange),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CategoryDetailPage(
+                          country: r.country,
+                          dishes: r.dishes.map((d) => d.name).toList(),
+                          restaurant: r,
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
