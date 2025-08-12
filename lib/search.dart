@@ -1,6 +1,8 @@
+
 import 'package:flutter/material.dart';
 import 'package:food_api/model.dart';
 import 'category_detail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SearchPage extends StatefulWidget {
   final List<Restaurant> restaurants;
@@ -27,10 +29,24 @@ class SearchPageState extends State<SearchPage> {
   static const Color darkOrange = Color(0xFFF57C00);    // ส้มเข้ม
   static const Color backgroundColor = Colors.white;    // พื้นหลังขาว
 
+
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onSearchChanged);
+    _loadRecentSearches();
+  }
+
+  Future<void> _loadRecentSearches() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      recentSearches = prefs.getStringList('recentSearches') ?? [];
+    });
+  }
+
+  Future<void> _saveRecentSearches() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('recentSearches', recentSearches);
   }
 
   @override
@@ -87,6 +103,7 @@ class SearchPageState extends State<SearchPage> {
           recentSearches = recentSearches.take(5).toList();
         }
       });
+      _saveRecentSearches();
     }
 
     setState(() {
@@ -104,6 +121,7 @@ class SearchPageState extends State<SearchPage> {
     setState(() {
       recentSearches.remove(search);
     });
+    _saveRecentSearches();
   }
 
   // ค้นหาตามหมวดหมู่ประเทศ
