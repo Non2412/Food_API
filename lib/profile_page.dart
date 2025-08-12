@@ -1,11 +1,13 @@
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'dart:io';
-import 'package:image_picker/image_picker.dart';
 import 'register_page.dart';
+// ignore: unused_import
+import 'package:image_picker/image_picker.dart';
+// ignore: duplicate_import
+import 'package:flutter/material.dart';
 
-// ตัวแปร global สำหรับเก็บอีเมลผู้ใช้ที่ล็อกอินล่าสุด
+
 String? currentUserEmail;
 
 
@@ -423,4 +425,15 @@ class ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
+}
+
+extension on ImagePicker {
+  Future pickImage({required source, required int imageQuality}) async {}
+}
+
+class ImageSource {
+  static var gallery;
+}
+
+class ImagePicker {
 }

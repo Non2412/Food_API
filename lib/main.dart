@@ -6,7 +6,6 @@ import 'restaurant_home.dart';
 import 'category_detail.dart';
 import 'favorite_page.dart'; // <-- นำเข้า FavoritePage
 
-
 import 'search.dart';
 import 'profile_page.dart';
 import 'login_page.dart';
@@ -47,17 +46,22 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
   List<int> favorites = [];
   List<Restaurant> restaurants = [];
   bool isLoading = true;
-  int selectedTabIndex = 0; // เพิ่มตัวแปรนี้
+  int selectedTabIndex = 0;
 
   final List<String> categories = [
-    'ทั้งหมด', 'ไทย', 'ญี่ปุ่น', 'อิตาลี', 'อเมริกัน', 'เอเชีย'
+    'ทั้งหมด',
+    'ไทย',
+    'ญี่ปุ่น',
+    'อิตาลี',
+    'อเมริกัน',
+    'เอเชีย',
   ];
 
   // แมปประเทศจาก cuisine
   String mapCuisineToCountry(String cuisine) {
     final Map<String, String> cuisineMap = {
       'Thai': 'ไทย',
-      'Japanese': 'ญี่ปุ่น', 
+      'Japanese': 'ญี่ปุ่น',
       'Italian': 'อิตาลี',
       'American': 'อเมริกัน',
       'Chinese': 'เอเชีย',
@@ -89,7 +93,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
           restaurants = recipes.map((recipe) {
             String cuisine = recipe['cuisine'] ?? 'Unknown';
             String country = mapCuisineToCountry(cuisine);
-            
+
             return Restaurant(
               id: recipe['id'],
               name: recipe['name'],
@@ -106,8 +110,10 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                   name: recipe['name'],
                   price: recipe['caloriesPerServing'] ?? 100,
                   image: recipe['image'] ?? '',
-                  description: recipe['instructions']?.take(2)?.join(' ') ?? 'อาหารอร่อย',
-                )
+                  description:
+                      recipe['instructions']?.take(2)?.join(' ') ??
+                      'อาหารอร่อย',
+                ),
               ],
             );
           }).toList();
@@ -135,9 +141,9 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
   void addToCart(Restaurant restaurant, Dish dish) {
     setState(() {
       int existingIndex = cartItems.indexWhere(
-          (item) =>
-              item.dish.name == dish.name &&
-              item.restaurant.id == restaurant.id);
+        (item) =>
+            item.dish.name == dish.name && item.restaurant.id == restaurant.id,
+      );
 
       if (existingIndex >= 0) {
         cartItems[existingIndex].quantity++;
@@ -156,7 +162,9 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
 
   int get cartTotal {
     return cartItems.fold(
-        0, (total, item) => total + (item.dish.price * item.quantity));
+      0,
+      (total, item) => total + (item.dish.price * item.quantity),
+    );
   }
 
   @override
@@ -168,7 +176,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
               children: [
                 // Header
                 Container(
-                  color: Colors.white,
+                  color: const Color.fromARGB(255, 228, 99, 40),
                   child: SafeArea(
                     child: Padding(
                       padding: EdgeInsets.all(16.0),
@@ -183,13 +191,24 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                                 children: [
                                   Row(
                                     children: [
-                                      Icon(Icons.location_on,
-                                          color: Colors.red, size: 16),
+                                      Icon(
+                                        Icons.location_on,
+                                        color: const Color.fromARGB(
+                                          255,
+                                          248,
+                                          17,
+                                          0,
+                                        ),
+                                        size: 16,
+                                      ),
                                       SizedBox(width: 4),
-                                      Text('ส่งถึง',
-                                          style: TextStyle(
-                                              color: Colors.grey[600],
-                                              fontSize: 14)),
+                                      Text(
+                                        'ส่งถึง',
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 14,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                   Text(
@@ -210,7 +229,10 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => RestaurantCountryPage(restaurants: restaurants),
+                                          builder: (context) =>
+                                              RestaurantCountryPage(
+                                                restaurants: restaurants,
+                                              ),
                                         ),
                                       );
                                     },
@@ -222,17 +244,28 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                                         color: Colors.blue,
                                         borderRadius: BorderRadius.circular(20),
                                       ),
-                                      child: Icon(Icons.public, color: Colors.white),
+                                      child: Icon(
+                                        Icons.public,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                   // ปุ่มรายการโปรด
                                   GestureDetector(
                                     onTap: () {
-                                      List<Restaurant> favoriteRestaurants = restaurants.where((r) => favorites.contains(r.id)).toList();
+                                      List<Restaurant> favoriteRestaurants =
+                                          restaurants
+                                              .where(
+                                                (r) => favorites.contains(r.id),
+                                              )
+                                              .toList();
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
-                                          builder: (context) => FavoritePage(favoriteRestaurants: favoriteRestaurants),
+                                          builder: (context) => FavoritePage(
+                                            favoriteRestaurants:
+                                                favoriteRestaurants,
+                                          ),
                                         ),
                                       );
                                     },
@@ -244,7 +277,10 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                                         color: Colors.pink,
                                         borderRadius: BorderRadius.circular(20),
                                       ),
-                                      child: Icon(Icons.favorite, color: Colors.white),
+                                      child: Icon(
+                                        Icons.favorite,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                   // ตะกร้า
@@ -255,10 +291,14 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                                         height: 40,
                                         decoration: BoxDecoration(
                                           color: Colors.orange,
-                                          borderRadius: BorderRadius.circular(20),
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
                                         ),
-                                        child: Icon(Icons.shopping_cart,
-                                            color: Colors.white),
+                                        child: Icon(
+                                          Icons.shopping_cart,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                       if (cartItems.isNotEmpty)
                                         Positioned(
@@ -272,7 +312,9 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                                                   BorderRadius.circular(10),
                                             ),
                                             constraints: BoxConstraints(
-                                                minWidth: 20, minHeight: 20),
+                                              minWidth: 20,
+                                              minHeight: 20,
+                                            ),
                                             child: Text(
                                               '${cartItems.length}',
                                               style: TextStyle(
@@ -291,18 +333,22 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                             ],
                           ),
                           SizedBox(height: 16),
-                          // Search Bar - เปลี่ยนจาก TextField เป็น GestureDetector
+                          // Search Bar
                           GestureDetector(
                             onTap: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => SearchPage(restaurants: restaurants),
+                                  builder: (context) =>
+                                      SearchPage(restaurants: restaurants),
                                 ),
                               );
                             },
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.grey[100],
                                 borderRadius: BorderRadius.circular(12),
@@ -351,25 +397,28 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                             scrollDirection: Axis.horizontal,
                             child: Row(
                               children: categories.map((category) {
-                                bool isSelected =
-                                    selectedCategory == category;
+                                bool isSelected = selectedCategory == category;
                                 return Container(
                                   margin: EdgeInsets.only(right: 12),
                                   child: GestureDetector(
                                     onTap: () => setState(
-                                        () => selectedCategory = category),
+                                      () => selectedCategory = category,
+                                    ),
                                     child: Container(
                                       padding: EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 8),
+                                        horizontal: 16,
+                                        vertical: 8,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: isSelected
                                             ? Colors.black
-                                            : Colors.white, // เปลี่ยนจาก Colors.orange เป็น Colors.black
+                                            : Colors.white,
                                         borderRadius: BorderRadius.circular(20),
                                         boxShadow: [
                                           BoxShadow(
-                                            color:
-                                                Colors.black.withOpacity(0.05),
+                                            color: Colors.black.withOpacity(
+                                              0.05,
+                                            ),
                                             blurRadius: 4,
                                             offset: Offset(0, 2),
                                           ),
@@ -435,8 +484,9 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
   Widget _buildRestaurantCard(Restaurant restaurant) {
     return GestureDetector(
       onTap: () {
-        // กดดูรายละเอียดของร้าน
-        List<String> dishNames = restaurant.dishes.map((dish) => dish.name).toList();
+        List<String> dishNames = restaurant.dishes
+            .map((dish) => dish.name)
+            .toList();
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -472,10 +522,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: restaurant.image.isNotEmpty
-                    ? Image.network(
-                        restaurant.image,
-                        fit: BoxFit.cover,
-                      )
+                    ? Image.network(restaurant.image, fit: BoxFit.cover)
                     : Center(child: Text("🍽️")),
               ),
             ),
@@ -502,12 +549,14 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.star, color: Colors.black, size: 12), // เปลี่ยนจาก Colors.yellow[700] เป็น Colors.black
+                    Icon(Icons.star, color: Colors.black, size: 12),
                     SizedBox(width: 2),
                     Text(
                       '${restaurant.rating}',
-                      style:
-                          TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -523,8 +572,12 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                 ),
                 IconButton(
                   icon: Icon(
-                    favorites.contains(restaurant.id) ? Icons.favorite : Icons.favorite_border,
-                    color: favorites.contains(restaurant.id) ? Colors.pink : Colors.grey,
+                    favorites.contains(restaurant.id)
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: favorites.contains(restaurant.id)
+                        ? Colors.pink
+                        : Colors.grey,
                     size: 20,
                   ),
                   onPressed: () => toggleFavorite(restaurant.id),
@@ -572,7 +625,8 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                 backgroundColor: Colors.orange,
                 padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: Text(
                 'ดูตะกร้า',
@@ -619,19 +673,20 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
           selectedTabIndex = index;
         });
         if (label == 'รายการโปรด') {
-          List<Restaurant> favoriteRestaurants = restaurants.where((r) => favorites.contains(r.id)).toList();
+          List<Restaurant> favoriteRestaurants = restaurants
+              .where((r) => favorites.contains(r.id))
+              .toList();
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => FavoritePage(favoriteRestaurants: favoriteRestaurants),
+              builder: (context) =>
+                  FavoritePage(favoriteRestaurants: favoriteRestaurants),
             ),
           );
         } else if (label == 'โปรไฟล์') {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => ProfilePage(),
-            ),
+            MaterialPageRoute(builder: (context) => ProfilePage()),
           );
         } else if (label == 'ค้นหา') {
           Navigator.push(
@@ -650,12 +705,14 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
             style: TextStyle(
               fontSize: 20,
               color: isSelected ? Colors.black : Colors.grey[500],
+              color: isSelected ? Colors.black : Colors.grey[500],
             ),
           ),
           SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
+              color: isSelected ? Colors.black : Colors.grey[500],
               color: isSelected ? Colors.black : Colors.grey[500],
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
