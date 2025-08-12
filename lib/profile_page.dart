@@ -110,6 +110,16 @@ class ProfilePageState extends State<ProfilePage> {
                 email = emailController.text;
                 phone = phoneController.text;
                 address = addressController.text;
+                // sync ข้อมูลกับ UserStore
+                final userIndex = UserStore.users.indexWhere((u) => u['email'] == currentUserEmail);
+                if (userIndex != -1) {
+                  UserStore.users[userIndex]['name'] = name;
+                  UserStore.users[userIndex]['email'] = email;
+                  UserStore.users[userIndex]['phone'] = phone;
+                  UserStore.users[userIndex]['address'] = address;
+                  // sync currentUserEmail ถ้าอีเมลเปลี่ยน
+                  currentUserEmail = email;
+                }
               });
               Navigator.pop(context);
             },
@@ -166,7 +176,7 @@ class ProfilePageState extends State<ProfilePage> {
               ElevatedButton(
                 onPressed: () {
                   // ดึง user ปัจจุบันจาก UserStore
-                  final userIndex = UserStore.users.indexWhere((u) => u['email'] == email);
+                  final userIndex = UserStore.users.indexWhere((u) => u['email'] == currentUserEmail);
                   if (userIndex == -1) {
                     setState(() { errorText = 'ไม่พบผู้ใช้'; });
                     return;

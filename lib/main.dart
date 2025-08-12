@@ -6,7 +6,11 @@ import 'restaurant_home.dart';
 import 'category_detail.dart';
 import 'favorite_page.dart'; // <-- นำเข้า FavoritePage
 
-import 'search.dart'; 
+
+import 'search.dart';
+import 'profile_page.dart';
+import 'login_page.dart';
+import 'register_page.dart'; // <-- นำเข้า RegisterPage
 
 void main() {
   runApp(MyApp());
@@ -22,7 +26,11 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.grey[50],
         fontFamily: 'Roboto',
       ),
-      home: RestaurantHomePageData(),
+      home: LoginPage(),
+      routes: {
+        '/register': (context) => RegisterPage(),
+        '/home': (context) => RestaurantHomePageData(),
+      },
       debugShowCheckedModeBanner: false,
     );
   }
@@ -596,34 +604,6 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
               _buildBottomNavItem('🔍', 'ค้นหา', 1),
               _buildBottomNavItem('❤️', 'รายการโปรด', 2),
               _buildBottomNavItem('👤', 'โปรไฟล์', 3),
-              _buildBottomNavItem('🏠', 'หน้าแรก', false),
-              // ปุ่มค้นหาที่เชื่อมต่อกับหน้าค้นหา
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => SearchPage(restaurants: restaurants),
-                    ),
-                  );
-                },
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('🔍', style: TextStyle(fontSize: 20)),
-                    SizedBox(height: 4),
-                    Text(
-                      'ค้นหา',
-                      style: TextStyle(
-                        color: Colors.grey[500],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              _buildBottomNavItem('❤️', 'รายการโปรด', false),
-              _buildBottomNavItem('👤', 'โปรไฟล์', false),
             ],
           ),
         ),
@@ -646,8 +626,21 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
               builder: (context) => FavoritePage(favoriteRestaurants: favoriteRestaurants),
             ),
           );
+        } else if (label == 'โปรไฟล์') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProfilePage(),
+            ),
+          );
+        } else if (label == 'ค้นหา') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SearchPage(restaurants: restaurants),
+            ),
+          );
         }
-        // เพิ่มการนำทางอื่นๆตามต้องการ
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -656,28 +649,17 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
             icon,
             style: TextStyle(
               fontSize: 20,
-              color: isSelected ? Colors.black : Colors.grey[500], // เปลี่ยนจาก Colors.orange เป็น Colors.black
+              color: isSelected ? Colors.black : Colors.grey[500],
             ),
           ),
           SizedBox(height: 4),
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? Colors.black : Colors.grey[500], // เปลี่ยนจาก Colors.orange เป็น Colors.black
+              color: isSelected ? Colors.black : Colors.grey[500],
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
-  Widget _buildBottomNavItem(String icon, String label, bool isActive) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(icon, style: TextStyle(fontSize: 20)),
-        SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            color: isActive ? Colors.orange : Colors.grey[500],
-            fontSize: 12,
           ),
         ],
       ),
