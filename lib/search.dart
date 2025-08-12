@@ -18,8 +18,8 @@ class SearchPageState extends State<SearchPage> {
   List<String> filteredDishes = [];
   bool isSearching = false;
   
-  // การค้นหาล่าสุดที่จะถูกบันทึกจริงๆ
-  List<String> recentSearches = [];
+  // เก็บประวัติการค้นหาแบบ static (แชร์ระหว่าง instance)
+  static List<String> recentSearches = [];
 
   // 🎨 Color scheme - โทนส้ม+ขาว
   static const Color primaryOrange = Color(0xFFFF9800); // ส้มหลัก
@@ -79,14 +79,12 @@ class SearchPageState extends State<SearchPage> {
     }
     filteredDishes = dishSet.toList();
 
-    // บันทึกการค้นหาล่าสุด
+    // บันทึกประวัติการค้นหา
     if (searchQuery.length >= 2 && !recentSearches.contains(searchQuery)) {
-      setState(() {
-        recentSearches.insert(0, searchQuery);
-        if (recentSearches.length > 5) {
-          recentSearches = recentSearches.take(5).toList();
-        }
-      });
+      recentSearches.insert(0, searchQuery);
+      if (recentSearches.length > 5) {
+        recentSearches = recentSearches.take(5).toList();
+      }
     }
 
     setState(() {
