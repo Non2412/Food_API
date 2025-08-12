@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'register_page.dart';
 
-// ตัวแปร global สำหรับเก็บอีเมลผู้ใช้ที่ล็อกอินล่าสุด
 String? currentUserEmail;
 
 
