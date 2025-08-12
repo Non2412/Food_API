@@ -4,6 +4,7 @@ import 'package:food_api/model.dart';
 import 'package:http/http.dart' as http;
 import 'restaurant_home.dart';
 import 'category_detail.dart';
+import 'search.dart'; 
 
 void main() {
   runApp(MyApp());
@@ -257,22 +258,36 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                             ],
                           ),
                           SizedBox(height: 16),
-                          // Search Bar
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.grey[100],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: TextField(
-                              decoration: InputDecoration(
-                                hintText: 'ค้นหาร้านอาหาร เมนู...',
-                                prefixIcon:
-                                    Icon(Icons.search, color: Colors.grey),
-                                suffixIcon:
-                                    Icon(Icons.tune, color: Colors.grey),
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 12),
+                          // Search Bar - เปลี่ยนจาก TextField เป็น GestureDetector
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => SearchPage(restaurants: restaurants),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.search, color: Colors.grey),
+                                  SizedBox(width: 12),
+                                  Text(
+                                    'ค้นหาร้านอาหาร เมนู...',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  Spacer(),
+                                  Icon(Icons.tune, color: Colors.grey),
+                                ],
                               ),
                             ),
                           ),
@@ -544,10 +559,34 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildBottomNavItem('🏠', 'หน้าแรก'),
-              _buildBottomNavItem('🔍', 'ค้นหา'),
-              _buildBottomNavItem('❤️', 'รายการโปรด'),
-              _buildBottomNavItem('👤', 'โปรไฟล์'),
+              _buildBottomNavItem('🏠', 'หน้าแรก', false),
+              // ปุ่มค้นหาที่เชื่อมต่อกับหน้าค้นหา
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SearchPage(restaurants: restaurants),
+                    ),
+                  );
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text('🔍', style: TextStyle(fontSize: 20)),
+                    SizedBox(height: 4),
+                    Text(
+                      'ค้นหา',
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _buildBottomNavItem('❤️', 'รายการโปรด', false),
+              _buildBottomNavItem('👤', 'โปรไฟล์', false),
             ],
           ),
         ),
@@ -555,7 +594,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
     );
   }
 
-  Widget _buildBottomNavItem(String icon, String label) {
+  Widget _buildBottomNavItem(String icon, String label, bool isActive) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -564,7 +603,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
         Text(
           label,
           style: TextStyle(
-            color: Colors.grey[500],
+            color: isActive ? Colors.orange : Colors.grey[500],
             fontSize: 12,
           ),
         ),
