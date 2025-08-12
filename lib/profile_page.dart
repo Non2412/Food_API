@@ -218,74 +218,152 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         title: const Text('โปรไฟล์'),
         centerTitle: true,
+        backgroundColor: Colors.orange,
+        elevation: 0,
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: _pickProfileImage,
-              child: CircleAvatar(
-                radius: 50,
-                backgroundImage: profileImage != null
-                    ? FileImage(profileImage!)
-                    : const AssetImage('assets/profile.jpg') as ImageProvider,
-                child: Align(
-                  alignment: Alignment.bottomRight,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
+      backgroundColor: Colors.orange[50],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+          child: Column(
+            children: [
+              Center(
+                child: Stack(
+                  children: [
+                    GestureDetector(
+                      onTap: _pickProfileImage,
+                      child: CircleAvatar(
+                        radius: 60,
+                        backgroundColor: Colors.white,
+                        backgroundImage: profileImage != null
+                            ? FileImage(profileImage!)
+                            : const AssetImage('assets/profile.jpg') as ImageProvider,
+                      ),
                     ),
-                    padding: const EdgeInsets.all(4),
-                    child: const Icon(Icons.camera_alt, size: 20, color: Colors.orange),
+                    Positioned(
+                      bottom: 0,
+                      right: 4,
+                      child: GestureDetector(
+                        onTap: _pickProfileImage,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Colors.orange,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.all(8),
+                          child: const Icon(Icons.camera_alt, color: Colors.white, size: 22),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              Card(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Text(
+                          name,
+                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.orange),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          const Icon(Icons.email, color: Colors.orange, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text('อีเมล: $email', style: const TextStyle(fontSize: 16, color: Colors.black87)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          const Icon(Icons.phone, color: Colors.orange, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text('เบอร์โทรศัพท์: $phone', style: const TextStyle(fontSize: 16, color: Colors.black87)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.home, color: Colors.orange, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text('ที่อยู่: $address', style: const TextStyle(fontSize: 16, color: Colors.black87)),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              name,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'อีเมล: $email',
-              style: const TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'เบอร์โทรศัพท์: $phone',
-              style: const TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'ที่อยู่: $address',
-              style: const TextStyle(fontSize: 16, color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 30),
-            ElevatedButton(
-              onPressed: () => _showEditProfileDialog(context),
-              child: const Text('แก้ไขโปรไฟล์'),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _showChangePasswordDialog(context),
-              child: const Text('เปลี่ยนรหัสผ่าน'),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => _showManageAccountDialog(context),
-              child: const Text('จัดการบัญชี'),
-            ),
-            const SizedBox(height: 16),
-            OutlinedButton(
-              onPressed: () => _logout(context),
-              style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-              child: const Text('ออกจากระบบ'),
-            ),
-          ],
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: () => _showEditProfileDialog(context),
+                icon: const Icon(Icons.edit),
+                label: const Text('แก้ไขโปรไฟล์'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  textStyle: const TextStyle(fontSize: 18),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => _showChangePasswordDialog(context),
+                icon: const Icon(Icons.lock),
+                label: const Text('เปลี่ยนรหัสผ่าน'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepOrange,
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  textStyle: const TextStyle(fontSize: 18),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () => _showManageAccountDialog(context),
+                icon: const Icon(Icons.delete_forever),
+                label: const Text('จัดการบัญชี'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.redAccent,
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  textStyle: const TextStyle(fontSize: 18),
+                ),
+              ),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: () => _logout(context),
+                icon: const Icon(Icons.logout, color: Colors.red),
+                label: const Text('ออกจากระบบ', style: TextStyle(color: Colors.red)),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.red),
+                  minimumSize: const Size.fromHeight(48),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  textStyle: const TextStyle(fontSize: 18),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
