@@ -165,14 +165,22 @@ class ProfilePageState extends State<ProfilePage> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  // ตัวอย่าง: สมมติรหัสผ่านเดิมคือ '1234'
-                  if (oldPasswordController.text != '1234') {
+                  // ดึง user ปัจจุบันจาก UserStore
+                  final userIndex = UserStore.users.indexWhere((u) => u['email'] == email);
+                  if (userIndex == -1) {
+                    setState(() { errorText = 'ไม่พบผู้ใช้'; });
+                    return;
+                  }
+                  final user = UserStore.users[userIndex];
+                  if (oldPasswordController.text != (user['password'] ?? '')) {
                     setState(() { errorText = 'รหัสผ่านเดิมไม่ถูกต้อง'; });
                   } else if (newPasswordController.text.length < 4) {
                     setState(() { errorText = 'รหัสผ่านใหม่ควรมีอย่างน้อย 4 ตัวอักษร'; });
                   } else if (newPasswordController.text != confirmPasswordController.text) {
                     setState(() { errorText = 'รหัสผ่านใหม่ไม่ตรงกัน'; });
                   } else {
+                    // อัปเดตรหัสผ่านใหม่ใน UserStore
+                    UserStore.users[userIndex]['password'] = newPasswordController.text;
                     Navigator.pop(context);
                     _showPasswordChangedDialog(context);
                   }
