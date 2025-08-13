@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'restaurant_home.dart';
 import 'category_detail.dart';
 import 'favorite_page.dart'; // <-- นำเข้า FavoritePage
+import 'cart_page.dart';
 
 
 import 'search.dart';
@@ -42,6 +43,11 @@ class RestaurantHomePageData extends StatefulWidget {
 }
 
 class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
+  void removeFromCart(CartItem item) {
+    setState(() {
+      cartItems.remove(item);
+    });
+  }
   String selectedCategory = 'ทั้งหมด';
   List<CartItem> cartItems = [];
   List<int> favorites = [];
@@ -193,7 +199,7 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                                     ],
                                   ),
                                   Text(
-                                    'Food Delivery',
+                                    'Im po ',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -248,43 +254,57 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                                     ),
                                   ),
                                   // ตะกร้า
-                                  Stack(
-                                    children: [
-                                      Container(
-                                        width: 40,
-                                        height: 40,
-                                        decoration: BoxDecoration(
-                                          color: Colors.orange,
-                                          borderRadius: BorderRadius.circular(20),
-                                        ),
-                                        child: Icon(Icons.shopping_cart,
-                                            color: Colors.white),
-                                      ),
-                                      if (cartItems.isNotEmpty)
-                                        Positioned(
-                                          right: -2,
-                                          top: -2,
-                                          child: Container(
-                                            padding: EdgeInsets.all(2),
-                                            decoration: BoxDecoration(
-                                              color: Colors.red,
-                                              borderRadius:
-                                                  BorderRadius.circular(10),
-                                            ),
-                                            constraints: BoxConstraints(
-                                                minWidth: 20, minHeight: 20),
-                                            child: Text(
-                                              '${cartItems.length}',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => CartPage(
+                                            cartItems: cartItems,
+                                            cartTotal: cartTotal,
+                                            onRemove: removeFromCart,
                                           ),
                                         ),
-                                    ],
+                                      );
+                                    },
+                                    child: Stack(
+                                      children: [
+                                        Container(
+                                          width: 40,
+                                          height: 40,
+                                          decoration: BoxDecoration(
+                                            color: Colors.orange,
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: Icon(Icons.shopping_cart,
+                                              color: Colors.white),
+                                        ),
+                                        if (cartItems.isNotEmpty)
+                                          Positioned(
+                                            right: -2,
+                                            top: -2,
+                                            child: Container(
+                                              padding: EdgeInsets.all(2),
+                                              decoration: BoxDecoration(
+                                                color: Colors.red,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              constraints: BoxConstraints(
+                                                  minWidth: 20, minHeight: 20),
+                                              child: Text(
+                                                '${cartItems.length}',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
                                   ),
                                 ],
                               ),
@@ -427,29 +447,91 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
               ],
             ),
       bottomNavigationBar: cartItems.isNotEmpty
-          ? _buildCartSummary()
+          ? Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border(top: BorderSide(color: Colors.grey[200]!)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 8,
+                    offset: Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'ตะกร้า (${cartItems.length} รายการ)',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                      onPressed: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CartPage(
+                              cartItems: cartItems,
+                              cartTotal: cartItems.fold(0, (sum, item) => sum + (item.dish.price * item.quantity)),
+                              onRemove: (item) {
+                                setState(() {
+                                  cartItems.remove(item);
+                                });
+                              },
+                            ),
+                          ),
+                        );
+                        // After returning from CartPage, clear cart if empty (purchase was made)
+                        setState(() {
+                          cartItems.removeWhere((item) => false); // triggers rebuild
+                        });
+                      },
+                      child: Text('ดูตะกร้า', style: TextStyle(fontSize: 16)),
+                    ),
+                  ],
+                ),
+              ),
+            )
           : _buildBottomNavigation(),
     );
   }
 
   Widget _buildRestaurantCard(Restaurant restaurant) {
+  final width = MediaQuery.of(context).size.width;
+  final iconSize = width * 0.03 + 7; // ลดขนาด icon
+  final fontSize = width * 0.03 + 7; // ลดขนาด font
+  final fontSizeSmall = width * 0.025 + 5; // ลดขนาด font เล็ก
     return GestureDetector(
       onTap: () {
-        // กดดูรายละเอียดของร้าน
-        List<String> dishNames = restaurant.dishes.map((dish) => dish.name).toList();
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => CategoryDetailPage(
               country: restaurant.country,
-              dishes: dishNames,
+              dishes: restaurant.dishes,
               restaurant: restaurant,
+              addToCart: (dish) => addToCart(restaurant, dish),
             ),
           ),
         );
       },
       child: Container(
-        padding: EdgeInsets.all(12),
+        padding: EdgeInsets.all(width * 0.03),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -462,10 +544,11 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
           ],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
               width: double.infinity,
-              height: 80,
+              height: width * 0.22,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -476,15 +559,15 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                         restaurant.image,
                         fit: BoxFit.cover,
                       )
-                    : Center(child: Text("🍽️")),
+                    : Center(child: Text("🍽️", style: TextStyle(fontSize: width * 0.09))),
               ),
             ),
-            SizedBox(height: 12),
+            SizedBox(height: width * 0.02),
             Text(
               restaurant.name,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 14,
+                fontSize: fontSize,
                 color: Colors.grey[800],
               ),
               maxLines: 1,
@@ -492,32 +575,32 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
             ),
             Text(
               '${restaurant.country} • ${restaurant.cuisine}',
-              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+              style: TextStyle(color: Colors.grey[600], fontSize: fontSizeSmall),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            SizedBox(height: 8),
+            SizedBox(height: width * 0.01),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisSize: MainAxisSize.min, // ป้องกัน overflow
               children: [
                 Row(
                   children: [
-                    Icon(Icons.star, color: Colors.black, size: 12), // เปลี่ยนจาก Colors.yellow[700] เป็น Colors.black
+                    Icon(Icons.star, color: Colors.black, size: iconSize),
                     SizedBox(width: 2),
                     Text(
                       '${restaurant.rating}',
-                      style:
-                          TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+                      style: TextStyle(fontWeight: FontWeight.w500, fontSize: fontSizeSmall),
                     ),
                   ],
                 ),
                 Row(
                   children: [
-                    Icon(Icons.access_time, color: Colors.grey[400], size: 12),
+                    Icon(Icons.access_time, color: Colors.grey[400], size: iconSize),
                     SizedBox(width: 2),
                     Text(
                       '${restaurant.deliveryTime.split('-')[0]} นาที',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                      style: TextStyle(color: Colors.grey[600], fontSize: fontSizeSmall),
                     ),
                   ],
                 ),
@@ -525,62 +608,13 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
                   icon: Icon(
                     favorites.contains(restaurant.id) ? Icons.favorite : Icons.favorite_border,
                     color: favorites.contains(restaurant.id) ? Colors.pink : Colors.grey,
-                    size: 20,
+                    size: iconSize + 2,
                   ),
                   onPressed: () => toggleFavorite(restaurant.id),
+                  padding: EdgeInsets.zero,
+                  constraints: BoxConstraints(),
                 ),
               ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCartSummary() {
-    return Container(
-      padding: EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey[200]!)),
-      ),
-      child: SafeArea(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${cartItems.length} รายการในตะกร้า',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                ),
-                Text(
-                  '฿$cartTotal',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                  ),
-                ),
-              ],
-            ),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-              child: Text(
-                'ดูตะกร้า',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
             ),
           ],
         ),
@@ -659,6 +693,122 @@ class _RestaurantHomePageDataState extends State<RestaurantHomePageData> {
               color: isSelected ? Colors.black : Colors.grey[500],
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class CategoryDetailPage extends StatefulWidget {
+  final String country;
+  final List<Dish> dishes;
+  final Restaurant restaurant;
+  final Function(Dish) addToCart;
+
+  const CategoryDetailPage({
+    Key? key,
+    required this.country,
+    required this.dishes,
+    required this.restaurant,
+    required this.addToCart,
+  }) : super(key: key);
+
+  @override
+  State<CategoryDetailPage> createState() => _CategoryDetailPageState();
+}
+
+class _CategoryDetailPageState extends State<CategoryDetailPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.restaurant.name),
+        backgroundColor: Colors.orange,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.favorite_border),
+            onPressed: () {
+              // TODO: Implement favorite functionality
+            },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Container(
+            height: 200,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: NetworkImage(widget.restaurant.image),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.restaurant.name,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  '${widget.restaurant.country} • ${widget.restaurant.cuisine}',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'เมนู',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+                ),
+                SizedBox(height: 8),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: widget.dishes.length,
+                  itemBuilder: (context, index) => Card(
+                    margin: EdgeInsets.only(bottom: 12),
+                    child: ListTile(
+                      contentPadding: EdgeInsets.all(16),
+                      title: Text(widget.dishes[index].name),
+                      subtitle: Text('ราคา: ${widget.dishes[index].price} ฿'),
+                      trailing: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.orange,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: IconButton(
+                          icon: const Icon(Icons.add, color: Colors.white),
+                          onPressed: () {
+                            widget.addToCart(widget.dishes[index]);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('เพิ่ม ${widget.dishes[index].name} ลงในตะกร้าแล้ว'),
+                                backgroundColor: Colors.green,
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
