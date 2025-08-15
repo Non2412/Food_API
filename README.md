@@ -108,13 +108,6 @@ final foodService = FoodService();
 final foodData = await foodService.getFoodInfo('pizza');
 ```
 
-## 📱 Screenshots
-
-[Add screenshots of your app here]
-
-| Home Screen | Search Results | Food Details |
-|-------------|----------------|--------------|
-| ![Home](screenshots/home.png) | ![Search](screenshots/search.png) | ![Details](screenshots/details.png) |
 
 ## 🧪 Testing
 
