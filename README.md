@@ -147,11 +147,7 @@ flutter build ios --release
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 👤 Author
 
-**Non2412**
-- GitHub: [@Non2412](https://github.com/Non2412)
-- Email: [your-email@example.com]
 
 ## 🙏 Acknowledgments
 
